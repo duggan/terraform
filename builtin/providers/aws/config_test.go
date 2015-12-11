@@ -109,7 +109,9 @@ func TestAWSConfig_shouldBeStatic(t *testing.T) {
 }
 
 func TestAWSConfig_shouldBeENV(t *testing.T) {
-	// ENV should be set
+	s := "test"
+	setEnv(s, t)
+	defer resetEnv(t)
 	cfg := Config{}
 
 	creds := getCreds(cfg.AccessKey, cfg.SecretKey, cfg.Token)
@@ -120,14 +122,14 @@ func TestAWSConfig_shouldBeENV(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error gettings creds: %s", err)
 	}
-	if v.AccessKeyID != k {
-		t.Fatalf("AccessKeyID mismatch, expected: (%s), got (%s)", k, v.AccessKeyID)
+	if v.AccessKeyID != s {
+		t.Fatalf("AccessKeyID mismatch, expected: (%s), got (%s)", s, v.AccessKeyID)
 	}
 	if v.SecretAccessKey != s {
 		t.Fatalf("SecretAccessKey mismatch, expected: (%s), got (%s)", s, v.SecretAccessKey)
 	}
-	if v.SessionToken != to {
-		t.Fatalf("SessionToken mismatch, expected: (%s), got (%s)", to, v.SessionToken)
+	if v.SessionToken != s {
+		t.Fatalf("SessionToken mismatch, expected: (%s), got (%s)", s, v.SessionToken)
 	}
 }
 
@@ -155,5 +157,18 @@ func resetEnv(t *testing.T) {
 	}
 	if err := os.Setenv("AWS_SESSION_TOKEN", to); err != nil {
 		t.Fatalf("Error resetting env var AWS_SESSION_TOKEN: %s", err)
+	}
+}
+
+func setEnv(s string, t *testing.T) {
+	// re-set all the envs we unset above
+	if err := os.Setenv("AWS_ACCESS_KEY_ID", s); err != nil {
+		t.Fatalf("Error setting env var AWS_ACCESS_KEY_ID: %s", err)
+	}
+	if err := os.Setenv("AWS_SECRET_ACCESS_KEY", s); err != nil {
+		t.Fatalf("Error setting env var AWS_SECRET_ACCESS_KEY: %s", err)
+	}
+	if err := os.Setenv("AWS_SESSION_TOKEN", s); err != nil {
+		t.Fatalf("Error setting env var AWS_SESSION_TOKEN: %s", err)
 	}
 }
